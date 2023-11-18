@@ -13,9 +13,9 @@ namespace ProjectManagementToolAPI.Controllers
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
-        public AuthenticationController(UserManager<IdentityUser> userManager, IConfiguration configuration)
+        public AuthenticationController(UserManager<ApplicationUser> userManager, IConfiguration configuration)
         {
             _userManager = userManager;
             _configuration = configuration;
@@ -40,9 +40,10 @@ namespace ProjectManagementToolAPI.Controllers
                 }
 
                 // Create user
-                var user = new IdentityUser()
+                var user = new ApplicationUser()
                 {
                     UserName = registrationRequest.Name,
+                    LastName = registrationRequest.LastName,
                     Email = registrationRequest.Email
                 };
 
@@ -68,7 +69,54 @@ namespace ProjectManagementToolAPI.Controllers
             return BadRequest();
         }
 
-        private string GenerateJwtToken(IdentityUser user)
+        [HttpPost]
+        [Route("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequestDTO loginRequest)
+        {
+            // Validate incoming request
+            if (ModelState.IsValid)
+            {
+                // Check if user exists
+                var userExist = await _userManager.FindByEmailAsync(loginRequest.Email);
+
+                if (userExist == null)
+                {
+                    return BadRequest(new AuthResult()
+                    {
+                        Result = false,
+                        Errors = new List<string>() { "Email doesn't exists" }
+                    });
+                }
+
+                // Check if password correct
+                var passwordCorrect = await _userManager.CheckPasswordAsync(userExist, loginRequest.Password);
+
+                if (passwordCorrect)
+                {
+                    // Generate token
+                    var token = GenerateJwtToken(userExist);
+                    return Ok(new AuthResult()
+                    {
+                        Result = true,
+                        Token = token
+                    });
+                }
+
+                return BadRequest(new AuthResult()
+                {
+                    Result = false,
+                    Errors = new List<string>() { "Incorrect email or password" }
+                });
+            }
+
+            return BadRequest(new AuthResult()
+            {
+                Result = false,
+                Errors = new List<string>() { "Login failed" }
+            });
+        }
+
+            private string GenerateJwtToken(ApplicationUser user)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);

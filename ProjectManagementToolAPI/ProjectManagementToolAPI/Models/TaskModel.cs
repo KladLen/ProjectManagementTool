@@ -19,10 +19,10 @@ namespace ProjectManagementToolAPI.Models
         public string CreatorId { get; set; }
         
         [ForeignKey("CreatorId")]
-        public IdentityUser Creator { get; set; }
+        public ApplicationUser Creator { get; set; }
         public string AssigneeId { get; set; }
         
         [ForeignKey("AssigneeId")]
-        public IdentityUser Assignee { get; set; }
+        public ApplicationUser Assignee { get; set; }
     }
 }
