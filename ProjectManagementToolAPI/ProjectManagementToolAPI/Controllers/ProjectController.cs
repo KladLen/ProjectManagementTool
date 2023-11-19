@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using ProjectManagementToolAPI.Models.DTO;
 using ProjectManagementToolAPI.Models;
 using ProjectManagementToolAPI.Data;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ProjectManagementToolAPI.Controllers
 {
@@ -25,17 +26,21 @@ namespace ProjectManagementToolAPI.Controllers
             {
                 return BadRequest();
             }
-
-            string[] manager = project.ManagerFullName.Split(' ');
+          
             ProjectModel model = new ProjectModel
             {
                 Name = project.Name,
                 Key = project.Key,
                 Description = project.Description,
-                Status = "ToDo",
-                ManagerId = _db.Users.Where(u => u.UserName == manager[0] && u.LastName == manager[1])
-                                     .Select(p => p.Id).FirstOrDefault()
+                Status = "ToDo"
             };
+
+            if (!project.ManagerFullName.IsNullOrEmpty())
+            {
+                string[] manager = project.ManagerFullName.Split(' ');
+                model.ManagerId = _db.Users.Where(u => u.UserName == manager[0] && u.LastName == manager[1])
+                                           .Select(p => p.Id).FirstOrDefault();
+            }
 
             _db.Projects.Add(model);
             _db.SaveChanges();

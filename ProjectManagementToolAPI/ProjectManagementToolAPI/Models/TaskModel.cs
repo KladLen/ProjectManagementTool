@@ -24,6 +24,6 @@ namespace ProjectManagementToolAPI.Models
         public string? AssigneeId { get; set; }
         
         [ForeignKey("AssigneeId")]
-        public ApplicationUser Assignee { get; set; }
+        public ApplicationUser? Assignee { get; set; }
     }
 }

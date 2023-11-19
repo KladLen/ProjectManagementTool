@@ -12,6 +12,6 @@ namespace ProjectManagementToolAPI.Models
         public string? StartDate { get; set; }
         public string? EndDate { get; set; }
         public string? ManagerId { get; set; }
-        public ApplicationUser Mananger {  get; set; }
+        public ApplicationUser? Mananger {  get; set; }
     }
 }
