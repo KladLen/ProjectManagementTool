@@ -5,6 +5,7 @@ using ProjectManagementToolAPI.Models.DTO;
 using ProjectManagementToolAPI.Models;
 using ProjectManagementToolAPI.Data;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
 
 namespace ProjectManagementToolAPI.Controllers
 {
@@ -16,6 +17,13 @@ namespace ProjectManagementToolAPI.Controllers
         public ProjectController(ApplicationDbContext db)
         {
             _db = db;
+        }
+
+        [HttpGet]
+        //[Route("index")]
+        public async Task<ActionResult<IEnumerable<ProjectModel>>> Index()
+        {
+            return await _db.Projects.ToListAsync();
         }
 
         [HttpPost]

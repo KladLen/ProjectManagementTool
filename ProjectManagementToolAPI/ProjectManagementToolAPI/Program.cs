@@ -40,9 +40,16 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(
     builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddCors();
+
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
+
+app.UseCors(options =>
+options.WithOrigins("http://localhost:3000")
+.AllowAnyHeader()
+.AllowAnyMethod());
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
