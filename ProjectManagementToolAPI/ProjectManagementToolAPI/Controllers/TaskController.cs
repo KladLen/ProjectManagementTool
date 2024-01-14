@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ProjectManagementToolAPI.Data;
+using ProjectManagementToolAPI.Data.Interfaces;
 using ProjectManagementToolAPI.Models;
 using ProjectManagementToolAPI.Models.DTO;
 using System.Security.Claims;
@@ -19,10 +20,12 @@ namespace ProjectManagementToolAPI.Controllers
     {
         private readonly ApplicationDbContext _db;
         private readonly UserManager<ApplicationUser> _userManager;
-        public TaskController(ApplicationDbContext db, UserManager<ApplicationUser> userManager) 
+        private readonly ITaskService _taskService;
+        public TaskController(ApplicationDbContext db, UserManager<ApplicationUser> userManager, ITaskService taskService) 
         {
             _db = db;
             _userManager = userManager;
+            _taskService = taskService;
         }
 
         [HttpGet]
@@ -36,16 +39,7 @@ namespace ProjectManagementToolAPI.Controllers
             List<TaskDTO> tasksDTO = new List<TaskDTO>();
             foreach (var task in tasks)
             {
-                tasksDTO.Add(new TaskDTO
-                {
-                    Title = task.Title,
-                    Description = task.Description,
-                    Status = task.Status,
-                    DueDate = task.DueDate,
-                    Priority = task.Priority,
-                    ProjectTitle = task.Project.Name,
-                    AsigneeFullName = task.Assignee.UserName + " " + task.Assignee.LastName
-                });
+                tasksDTO.Add(_taskService.MapTaskToTaskDTO(task));
             }
             return Ok(tasksDTO);
         }
@@ -61,15 +55,7 @@ namespace ProjectManagementToolAPI.Controllers
                 return NotFound();   
             }
 
-            TaskDTO taskDTO = new TaskDTO
-            {
-                Title = task.Title,
-                Description = task.Description,
-                Status = task.Status,
-                DueDate = task.DueDate,
-                Priority = task.Priority,
-                ProjectTitle = task.Project.Name,
-            };
+            TaskDTO taskDTO = _taskService.MapTaskToTaskDTOWithoutUser(task);
 
             if (!string.IsNullOrEmpty(task.AssigneeId))
             {
@@ -90,17 +76,7 @@ namespace ProjectManagementToolAPI.Controllers
 
             var mail = _userManager.GetUserId(User);
                         
-            TaskModel model = new TaskModel
-            {
-                Title = taskDTO.Title,
-                Description = taskDTO.Description,
-                Status = "ToDo",
-                CreationDate = DateTime.Now.Date.ToString("yyyy-MM-dd"),
-                DueDate = taskDTO.DueDate,
-                Priority = taskDTO.Priority,
-                ProjectId = _db.Projects.Where(p => p.Name == taskDTO.ProjectTitle).Select(p => p.Id).FirstOrDefault(),
-                CreatorId = _db.Users.Where(u => u.Email == mail).Select(u => u.Id).FirstOrDefault()
-            };
+            TaskModel model = _taskService.MapTaskDTOToTaskModel(taskDTO, mail);
 
             if (!taskDTO.AsigneeFullName.IsNullOrEmpty())
             {

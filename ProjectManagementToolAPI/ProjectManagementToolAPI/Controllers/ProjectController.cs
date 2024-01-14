@@ -20,7 +20,6 @@ namespace ProjectManagementToolAPI.Controllers
         }
 
         [HttpGet]
-        //[Route("index")]
         public async Task<ActionResult<IEnumerable<ProjectModel>>> Index()
         {
             return await _db.Projects.ToListAsync();

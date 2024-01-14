@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ProjectManagementToolAPI.Data;
+using ProjectManagementToolAPI.Data.Implementation;
+using ProjectManagementToolAPI.Data.Interfaces;
 using ProjectManagementToolAPI.Models;
 using System.Text;
 
@@ -34,6 +36,9 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<ITaskService, TaskService>();
+
 builder.Services.AddMvc();
 builder.Services.AddControllers();
 
